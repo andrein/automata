@@ -23,14 +23,14 @@ class NFA{
     NFA(unsigned size, state initial, state final);
     NFA(const NFA& other);
     NFA(input in); //create a basic NFA on input in
-    NFA unionNFA(NFA nfa1, NFA nfa2);
+/*    NFA unionNFA(NFA nfa1, NFA nfa2);
     NFA concatenateNFA(NFA nfa1, NFA nfa2);
-    NFA starNFA(NFA nfa);
+    NFA starNFA(NFA nfa);*/
     NFA& operator=(const NFA& other);
     NFA& operator+(const NFA& other); //concatenation operator: a+b=ab
 //    NFA& operator+();                 //a+ is the equivalent of aa*
     NFA& operator*(); //Kleen closure / Star operator: a*
-    NFA& operator|(const NFA& other); //union operator: a|b 
+    NFA& operator|(NFA& other); //union operator: a|b 
     
     void show() const;
 
@@ -49,6 +49,6 @@ class NFA{
     deque< deque <input> > transTable;
 
     bool isValidState(state s);
-    void insertNFA(NFA& other);
+    void insertNFA(const NFA& other);
 };
 #endif // NFA_H

@@ -51,16 +51,65 @@ NFA::NFA(input in){
 }
 
 /*
-Build an union of two NFAs.
+Inserts a NFA into another NFA
 */
-NFA NFA::unionNFA(NFA nfa1, NFA nfa2){
-  
+void NFA::insertNFA(const NFA& other){
+  insertState(other.size, FRONT);
+  //TODO looks ugly, fix it!
+  for (state i = 0; i < other.size; ++i)
+    {
+        for (state j = 0; j < other.size; ++j)
+        {
+			transTable[i][j] = other.transTable[i][j];
+		}
+	}
 }
 
+
+/*
+Build an union of two NFAs.
+*/
+NFA& NFA::operator|(NFA& other){
+  other.insertState(1, FRONT);
+  insertState(1, BACK);
+  insertNFA(other);
+  addTransition(initial, initial+1, EPS);
+  addTransition(initial, other.size, EPS);
+  addTransition(other.final, final, EPS);
+  addTransition(final-1, final, EPS);
+  return *this;
+}
+
+
+/*
+Kleen closure / Star operator
+*/
+NFA& NFA::operator*(){
+  insertState(1, FRONT);
+  insertState(1, BACK);
+  addTransition(initial, initial+1, EPS);
+  addTransition(final-1, final, EPS);
+  addTransition(final-1, initial+1, EPS);
+  addTransition(initial, final, EPS);
+  return *this;
+}
+    
 /*
 Concatenate two NFAs
 */
-NFA NFA::concatenateNFA(NFA nfa1, NFA nfa2){
+NFA& NFA::operator+(const NFA& other){
+  //TODO duplicated code form insertNFA
+  insertState(other.size-1, FRONT);
+  //TODO looks ugly, fix it!
+  for (state i = 0; i < other.size; ++i)
+    {
+        for (state j = 0; j < other.size; ++j)
+        {
+			transTable[i][j] = other.transTable[i][j];
+		}
+	}
+  final = size - 1;
+  return *this;
   
 }
 
@@ -118,26 +167,20 @@ void NFA::insertState(int numStates, position p){
   switch (p){
     case FRONT:
       for (it = transTable.begin(); it < transTable.end(); *++it)
-	it->insert(it->begin(), numStates, NONE);
+        it->insert(it->begin(), numStates, NONE);
       it = transTable.begin();
       transTable.insert(it, numStates, deque<input> (size, NONE));
+      final=size-1;
       break;
       
     case BACK:
       for (it = transTable.begin(); it < transTable.end(); *++it)
-	it->insert(it->end(), numStates, NONE);
+        it->insert(it->end(), numStates, NONE);
       it = transTable.end();
       transTable.insert(it, numStates, deque<input> (size, NONE));
+      final=size-1;
       break;
   }
-}
-
-/*
-Inserts a NFA into another NFA
-*/
-void NFA::insertNFA(NFA& other){
-  insertState(other.size-1, BACK);
-  
 }
 
 /*
